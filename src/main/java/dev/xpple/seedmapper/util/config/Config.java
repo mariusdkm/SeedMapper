@@ -35,24 +35,7 @@ public class Config {
 
     public static void init() {
         try {
-            if (configPath.toFile().exists() && configPath.toFile().isFile()) {
-                root = parser.parse(Files.newBufferedReader(configPath)).getAsJsonObject();
-                if (root.has("seeds")) {
-                    for (Map.Entry<String, JsonElement> element : root.getAsJsonObject("seeds").entrySet()) {
-                        seeds.put(element.getKey(), element.getValue().getAsLong());
-                    }
-                } else {
-                    root.add("seeds", new JsonObject());
-                }
-                if (root.has("ignoredBlocks")) {
-                    for (JsonElement element : root.getAsJsonArray("ignoredBlocks")) {
-                        ignoredBlocks.add(Registry.BLOCK.get(new Identifier(element.getAsString())));
-                    }
-                } else {
-                    root.add("ignoredBlocks", new JsonArray());
-                }
-                toggle("automate", false);
-            } else {
+            if (!(configPath.toFile().exists() && configPath.toFile().isFile())) {
                 String standardJson = "" +
                         "{\n" +
                         "  \"automate\": {\n" +
@@ -68,6 +51,22 @@ public class Config {
                         "}\n";
                 Files.write(configPath, standardJson.getBytes(StandardCharsets.UTF_8));
             }
+            root = parser.parse(Files.newBufferedReader(configPath)).getAsJsonObject();
+            if (root.has("seeds")) {
+                for (Map.Entry<String, JsonElement> element : root.getAsJsonObject("seeds").entrySet()) {
+                    seeds.put(element.getKey(), element.getValue().getAsLong());
+                }
+            } else {
+                root.add("seeds", new JsonObject());
+            }
+            if (root.has("ignoredBlocks")) {
+                for (JsonElement element : root.getAsJsonArray("ignoredBlocks")) {
+                    ignoredBlocks.add(Registry.BLOCK.get(new Identifier(element.getAsString())));
+                }
+            } else {
+                root.add("ignoredBlocks", new JsonArray());
+            }
+            toggle("automate", false);
         } catch (IOException e) {
             LOGGER.error("Could not load config file. Your client may crash due to this.");
         }
